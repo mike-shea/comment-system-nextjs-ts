@@ -14,6 +14,8 @@ const Home: NextPage = () => {
       </Head>
       <main className="mx-auto flex max-w-3xl flex-col gap-4 py-10 px-8">
         <UserCommentBox />
+        <UserCommentBox />
+        <UserCommentBox />
       </main>
     </div>
   );

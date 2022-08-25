@@ -5,11 +5,10 @@ import { CommentData, comments as initialComments, currentUser } from '../data/d
 
 import UserCommentBox from '../components/UserCommentBox';
 import UserMeReply from '../components/UserMeReply';
-import { cp } from 'fs/promises';
 
 let loadedOnce = true;
 const Home: NextPage = () => {
-  const [comments, setComments] = useState<CommentData[]>();
+  const [comments, setComments] = useState<CommentData[] | null>(null);
 
   useEffect(() => {
     const cachedState = localStorage.getItem('commentState');

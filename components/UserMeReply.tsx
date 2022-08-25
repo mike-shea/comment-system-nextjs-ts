@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { CommentData, CurrentUserObject } from '../data/data';
-import { dateParser } from '../helpers/helpers';
 
 export default function UserMeReply(
   props: CurrentUserObject & {
-    setComments: React.Dispatch<React.SetStateAction<CommentData[]>>;
+    setComments: React.Dispatch<React.SetStateAction<CommentData[] | null>>;
     replyId?: string;
     parentCommenthLength: number;
     comments: CommentData[];
@@ -20,7 +19,7 @@ export default function UserMeReply(
     if (!props.replyId) {
       props.setComments((prevState) => {
         const newState = structuredClone(prevState);
-        newState.push({
+        newState?.push({
           id: (props.comments.length + 1).toString(),
           content: text,
           createdAt: new Date().toUTCString(),
@@ -50,7 +49,7 @@ export default function UserMeReply(
             const selectedId = props.replyId.substring(0, i + 1);
 
             if (!selectedComment) {
-              selectedComment = newState.find((comment) => comment.id === selectedId);
+              selectedComment = newState?.find((comment) => comment.id === selectedId);
             } else if (selectedComment) {
               selectedComment = selectedComment.replies.find(
                 (comment) => comment.id === selectedId

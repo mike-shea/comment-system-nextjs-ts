@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import { dateParser } from '../helpers/helpers';
-import type { CurrentUserObject, CommentData } from '../data/data';
+import type { CommentData } from '../data/data';
 import PortalWrapper from './PortalWrapper';
 import DeleteCommentModal from './DeleteCommentModal';
 
@@ -22,7 +22,7 @@ export default function SingleComment(props: {
   content: string;
   selectedUser: boolean;
   replyTo: string | null;
-  setComments: React.Dispatch<React.SetStateAction<CommentData[]>>;
+  setComments: React.Dispatch<React.SetStateAction<CommentData[] | null>>;
   setReplyState: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [editState, setEditState] = useState(false);
@@ -41,7 +41,7 @@ export default function SingleComment(props: {
         const selectedId = props.id.substring(0, i + 1);
         console.log('selected Id', selectedId);
         if (!selectedComment) {
-          selectedComment = newState.find((comment) => comment.id === selectedId);
+          selectedComment = newState?.find((comment) => comment.id === selectedId);
         } else if (selectedComment) {
           selectedComment = selectedComment.replies.find((comment) => comment.id === selectedId);
         }
@@ -65,11 +65,11 @@ export default function SingleComment(props: {
         console.log('selected Id', selectedId);
         if (!selectedComment) {
           if (i === commentDepth) {
-            const commentToDelete = newState.findIndex((comment) => comment.id === props.id);
-            newState.splice(commentToDelete, 1);
+            const commentToDelete = newState?.findIndex((comment) => comment.id === props.id);
+            if (commentToDelete) newState?.splice(commentToDelete, 1);
             break;
           }
-          selectedComment = newState.find((comment) => comment.id === selectedId);
+          selectedComment = newState?.find((comment) => comment.id === selectedId);
         } else if (selectedComment) {
           selectedComment = selectedComment.replies.find((comment) => comment.id === selectedId);
         }

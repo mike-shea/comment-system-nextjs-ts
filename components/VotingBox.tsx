@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CommentData } from '../data/data';
 
 function VotingButton(props: {
@@ -33,7 +33,7 @@ export default function VotingBox(props: {
     state: 'upvoted' | 'downvoted' | null;
   };
   replyId: string;
-  setComments: React.Dispatch<React.SetStateAction<CommentData[]>>;
+  setComments: React.Dispatch<React.SetStateAction<CommentData[] | null>>;
 }) {
   function handleScore(direction: 'upvoted' | 'downvoted') {
     const upvotedSelected = direction === 'upvoted';
@@ -57,7 +57,7 @@ export default function VotingBox(props: {
           const selectedId = props.replyId.substring(0, i + 1);
 
           if (!selectedComment) {
-            selectedComment = newState.find((comment) => comment.id === selectedId);
+            selectedComment = newState?.find((comment) => comment.id === selectedId);
           } else if (selectedComment) {
             selectedComment = selectedComment.replies.find((comment) => comment.id === selectedId);
           }
@@ -87,7 +87,7 @@ export default function VotingBox(props: {
           const selectedId = props.replyId.substring(0, i + 1);
 
           if (!selectedComment) {
-            selectedComment = newState.find((comment) => comment.id === selectedId);
+            selectedComment = newState?.find((comment) => comment.id === selectedId);
           } else if (selectedComment) {
             selectedComment = selectedComment.replies.find((comment) => comment.id === selectedId);
           }

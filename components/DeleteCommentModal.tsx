@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function DeleteCommentModal(props: {
   setDeleteState: React.Dispatch<React.SetStateAction<boolean>>;
   deleteComment: () => void;
@@ -7,8 +9,8 @@ export default function DeleteCommentModal(props: {
       <div className="flex max-w-sm flex-col rounded-lg bg-white p-8">
         <h1 className="pb-3 text-xl font-semibold text-slate-700">Delete Comment</h1>
         <p className="pb-4 text-base text-slate-500">
-          Are you sure you want to delete this comment? This will remove the comment and can't be
-          undone.
+          Are you sure you want to delete this comment? This will remove the comment and can&apos;t
+          be undone.
         </p>
         <div className="flex w-full gap-3">
           <button

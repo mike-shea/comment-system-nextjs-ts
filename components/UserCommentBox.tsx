@@ -7,7 +7,7 @@ import SingleComment from './SingleComment';
 
 export default function UserCommentBox(
   props: CommentData & {
-    setComments: React.Dispatch<React.SetStateAction<CommentData[]>>;
+    setComments: React.Dispatch<React.SetStateAction<CommentData[] | null>>;
     replyTo: string | null;
     comments: CommentData[];
     parentCommenthLength: number;

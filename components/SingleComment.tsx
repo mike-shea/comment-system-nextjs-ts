@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import { dateParser } from '../helpers/helpers';
-import type { CommentData } from '../data/data';
 import PortalWrapper from './PortalWrapper';
 import DeleteCommentModal from './DeleteCommentModal';
+import { CommentList, SingleCommentType } from '../data/commentData2';
 
 const youTag = (
   <p className=" ml-2 flex rounded-sm bg-gray-800 px-2 py-1 text-xs font-bold leading-none text-blue-100">
@@ -11,99 +11,70 @@ const youTag = (
   </p>
 );
 
-export default function SingleComment(props: {
-  id: string;
-  user: {
-    image: StaticImageData;
-    username: string;
-    userId: string;
-  };
-  createdAt: string;
-  content: string;
+export default function SingleComment({
+  currentComment,
+  replyTo,
+  selectedUser,
+  setComments,
+  setReplyState
+}: {
+  currentComment: SingleCommentType;
+  replyTo: SingleCommentType | null;
   selectedUser: boolean;
-  replyTo: string | null;
-  setComments: React.Dispatch<React.SetStateAction<CommentData[] | null>>;
+  setComments: React.Dispatch<React.SetStateAction<CommentList | null>>;
   setReplyState: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [editState, setEditState] = useState(false);
   const [deleteState, setDeleteState] = useState(false);
-  const [commentText, setCommentText] = useState(props.content);
+  const [commentText, setCommentText] = useState(currentComment.content);
 
   function saveChanges() {
-    setEditState(false);
-    props.setComments((prevState) => {
+    setComments((prevState) => {
+      if (!prevState) return null;
       const newState = structuredClone(prevState);
-
-      let selectedComment: CommentData | undefined;
-      const commentDepth = props.id.length;
-
-      for (let i = 0; i <= commentDepth; i += 2) {
-        const selectedId = props.id.substring(0, i + 1);
-        console.log('selected Id', selectedId);
-        if (!selectedComment) {
-          selectedComment = newState?.find((comment) => comment.id === selectedId);
-        } else if (selectedComment) {
-          selectedComment = selectedComment.replies.find((comment) => comment.id === selectedId);
-        }
-      }
-      if (selectedComment) selectedComment.content = commentText;
-
+      newState[currentComment.id].content = commentText;
       return newState;
     });
+    setEditState(false);
+    setDeleteState(false);
+    setReplyState(false);
   }
 
   function deleteComment() {
-    setEditState(false);
-    props.setComments((prevState) => {
+    setComments((prevState) => {
+      if (!prevState) return null;
       const newState = structuredClone(prevState);
-
-      let selectedComment: CommentData | undefined;
-      const commentDepth = props.id.length - 1;
-
-      for (let i = 0; i <= commentDepth; i += 2) {
-        const selectedId = props.id.substring(0, i + 1);
-        console.log('selected Id', selectedId);
-        if (!selectedComment) {
-          if (i === commentDepth) {
-            const commentToDelete = newState?.findIndex((comment) => comment.id === props.id);
-            if (commentToDelete) newState?.splice(commentToDelete, 1);
-            break;
-          }
-          selectedComment = newState?.find((comment) => comment.id === selectedId);
-        } else if (selectedComment) {
-          selectedComment = selectedComment.replies.find((comment) => comment.id === selectedId);
-        }
-        if (selectedComment && i === commentDepth - 2) {
-          const commentToDelete = selectedComment.replies.findIndex(
-            (comment) => comment.id === props.id
-          );
-          selectedComment.replies.splice(commentToDelete, 1);
-          break;
-        }
+      delete newState[currentComment.id];
+      if (replyTo) {
+        const replies = newState[replyTo.id].replies.filter(
+          (replyIds) => replyIds !== currentComment.id
+        );
+        newState[replyTo.id].replies = replies;
       }
-
       return newState;
     });
+    setEditState(false);
+    setDeleteState(false);
+    setReplyState(false);
   }
-
   return (
     <div className="flex w-full flex-col">
       <div className="flex h-10 flex-row items-center">
         <div className="h-8 w-8 rounded-full bg-gray-300">
-          <Image layout="responsive" src={props.user.image} />
+          <Image layout="responsive" src={currentComment.user.image} />
         </div>
-        <h3 className="pl-4 text-sm font-bold text-gray-600">{props.user.username}</h3>
-        {props.selectedUser && youTag}
-        <p className="pl-3 text-sm text-gray-400">{dateParser(props.createdAt)}</p>
-        {!props.selectedUser && (
+        <h3 className="pl-4 text-sm font-bold text-gray-600">{currentComment.user.username}</h3>
+        {selectedUser && youTag}
+        <p className="pl-3 text-sm text-gray-400">{dateParser(currentComment.createdAt)}</p>
+        {!selectedUser && (
           <button
-            onClick={() => props.setReplyState(true)}
+            onClick={() => setReplyState(true)}
             className="ml-auto text-sm font-bold text-blue-600"
             type="button">
             Reply
           </button>
         )}
-        {props.selectedUser && (
+        {selectedUser && (
           <div className="ml-auto flex gap-4">
             {editState && (
               <button
@@ -130,10 +101,10 @@ export default function SingleComment(props: {
       <div className="h-full w-full pt-2 text-gray-600">
         {!editState && (
           <p className="p-1">
-            {props.replyTo && (
-              <span className="font-semibold text-blue-500">@{props.replyTo} </span>
+            {currentComment.replyTo && (
+              <span className="font-semibold text-blue-500">@{replyTo?.user.username} </span>
             )}
-            {props.content}
+            {currentComment.content}
           </p>
         )}
         {editState && (

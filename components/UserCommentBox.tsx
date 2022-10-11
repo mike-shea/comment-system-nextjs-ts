@@ -1,69 +1,64 @@
 import React, { useState } from 'react';
-import { CommentData, currentUser } from '../data/data';
 
+import SingleComment from './SingleComment';
 import VotingBox from './VotingBox';
 import UserMeReply from './UserMeReply';
-import SingleComment from './SingleComment';
 
-export default function UserCommentBox(
-  props: CommentData & {
-    setComments: React.Dispatch<React.SetStateAction<CommentData[] | null>>;
-    replyTo: string | null;
-    comments: CommentData[];
-    parentCommenthLength: number;
-  }
-) {
+import { SingleCommentType, currentUser, CommentList } from '../data/commentData2';
+
+export default function UserCommentBox({
+  setComments,
+  comments,
+  currentComment,
+  replyTo
+}: {
+  comments: CommentList;
+  setComments: React.Dispatch<React.SetStateAction<CommentList | null>>;
+  currentComment: SingleCommentType;
+  replyTo: SingleCommentType | null;
+}) {
   const [replyState, setReplyState] = useState(false);
-  const nestedComments = props.replies;
-  const selectedUser = props.user.userId === currentUser.userId;
 
+  const selectedUser = currentUser.userId === currentComment.user.userId;
   return (
     <div>
       <div className="w-full rounded-2xl bg-white p-4">
-        <div className="flex flex-col flex-col-reverse gap-4 sm:flex-row">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <VotingBox
-            replyId={props.id}
-            setComments={props.setComments}
+            commentId={currentComment.id}
+            setComments={setComments}
             selectedUser={selectedUser}
-            score={props.score}
-            vote={props.vote}
+            score={currentComment.score}
+            vote={currentComment.vote}
           />
           <SingleComment
-            replyTo={props.replyTo}
+            replyTo={replyTo ?? null}
+            currentComment={currentComment}
             setReplyState={setReplyState}
-            setComments={props.setComments}
-            createdAt={props.createdAt}
-            content={props.content}
-            id={props.id}
-            user={props.user}
+            setComments={setComments}
             selectedUser={selectedUser}
           />
         </div>
       </div>
       {replyState && (
         <UserMeReply
-          comments={props.comments}
           setReplyState={setReplyState}
-          parentCommenthLength={props.replies.length}
-          replyId={props.id}
-          userId={currentUser.userId}
-          image={currentUser.image}
-          username={currentUser.username}
-          setComments={props.setComments}
+          replyId={currentComment.id}
+          setComments={setComments}
+          currentUser={currentUser}
         />
       )}
-      {nestedComments.length > 0 && (
+      {comments[currentComment.id].replies.length > 0 && (
         <div className="mt-4 flex flex-row pl-6">
           <div className="border-l-2 pr-6"> </div>
           <div className="flex w-full flex-col gap-4">
-            {nestedComments.map((comment) => (
+            {comments[currentComment.id].replies.map((commentId) => (
               <UserCommentBox
-                parentCommenthLength={props.replies.length}
-                comments={props.comments}
-                replyTo={props.user.username}
-                setComments={props.setComments}
-                key={comment.id}
-                {...comment}
+                replyTo={currentComment}
+                comments={comments}
+                setComments={setComments}
+                key={commentId}
+                currentComment={comments[commentId]}
               />
             ))}
           </div>

@@ -1,56 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { NextPage } from 'next';
-import { CommentData, comments as initialComments, currentUser } from '../data/data';
-// import type { CommentData } from '../data/data';
+import { commentDataFlat, CommentList, currentUser } from '../data/commentData2';
 
 import UserCommentBox from '../components/UserCommentBox';
 import UserMeReply from '../components/UserMeReply';
 
-let loadedOnce = true;
+let loadedOnce = false;
 const Home: NextPage = () => {
-  const [comments, setComments] = useState<CommentData[] | null>(null);
+  const [comments, setComments] = useState<CommentList | null>(null);
 
   useEffect(() => {
+    if (loadedOnce) return;
     const cachedState = localStorage.getItem('commentState');
-    if (cachedState && loadedOnce) {
-      const parsedState = JSON.parse(cachedState);
-      setComments(parsedState);
-    }
-    if (!cachedState && loadedOnce) {
-      console.log('setting initial state');
-      setComments(initialComments);
-    }
-    loadedOnce = false;
+    if (cachedState) setComments(JSON.parse(cachedState));
+    else if (!cachedState) setComments(commentDataFlat);
+    loadedOnce = true;
   }, []);
 
   useEffect(() => {
-    if (!loadedOnce) {
-      console.log('settingState');
-      localStorage.setItem('commentState', JSON.stringify(comments));
+    if (!comments) return;
+    localStorage.setItem('commentState', JSON.stringify(comments));
+  }, [comments]);
+
+  const commentsTopLevel = useMemo(() => {
+    if (!comments) return [];
+    const topLevelCommentsArray = [];
+    let commentId: keyof CommentList;
+    for (commentId in comments) {
+      if (comments[commentId].replyTo === null) {
+        topLevelCommentsArray.push(commentId);
+      }
     }
+    return topLevelCommentsArray;
   }, [comments]);
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-4 py-10 px-8">
       {comments &&
-        comments.map((comment) => (
+        commentsTopLevel.map((comment) => (
           <UserCommentBox
-            parentCommenthLength={comments.length}
-            comments={comments}
             replyTo={null}
+            comments={comments}
             setComments={setComments}
-            key={comment.id}
-            {...comment}
+            key={comment}
+            currentComment={comments[comment]}
           />
         ))}
-      {comments && (
-        <UserMeReply
-          parentCommenthLength={comments.length}
-          comments={comments}
-          setComments={setComments}
-          {...currentUser}
-        />
-      )}
+      {comments && <UserMeReply setComments={setComments} currentUser={currentUser} />}
     </main>
   );
 };
